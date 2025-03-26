@@ -17,7 +17,7 @@ data class NumberExpr(val value: Double) : Expression()
  *
  * @property name the identifier name
  */
-data class IdentifierExpr(val name: String) : Expression()
+data class IdentifierExpr(val name: String, val negative: Boolean) : Expression()
 
 /**
  * Represents a binary expression.
@@ -202,6 +202,11 @@ class Parser(
      * @throws ParseException if the expression is unrecognized
      */
     private fun parseBasic(): Expression {
+        var negative = false
+        if (isType(TokenType.MINUS)) {
+            eat(TokenType.MINUS)
+            negative = true
+        }
         if (isType(TokenType.PARENTHESES_OPEN)) {
             eat(TokenType.PARENTHESES_OPEN)
             val expression = parseExpression()
@@ -209,10 +214,13 @@ class Parser(
             return expression
         }
         if (isType(TokenType.NUMBER)) {
-            return NumberExpr(eat(TokenType.NUMBER).value.toDouble())
+            return NumberExpr((if (negative) -1 else 1) * eat(TokenType.NUMBER).value.toDouble())
         }
         if (isType(TokenType.IDENTIFIER)) {
-            return IdentifierExpr(eat(TokenType.IDENTIFIER).value)
+            return IdentifierExpr(
+                name = eat(TokenType.IDENTIFIER).value,
+                negative = negative
+            )
         }
         if (isType(TokenType.STRING)) {
             val expression = eat(TokenType.STRING).value

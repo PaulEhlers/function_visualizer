@@ -83,7 +83,10 @@ class Evaluator(
             is IdentifierExpr -> {
                 when (val lookup = environment.lookup(expression.name)) {
                     is FunctionValue -> throw EvaluatorException("Can't use function as Identifier")
-                    is NumberValue -> lookup.value
+                    is NumberValue -> {
+                        val sign = if (expression.negative) -1.0 else 1.0
+                        return sign * lookup.value
+                    }
                     else -> throw EvaluatorException("Invalid identifier type")
                 }
             }
